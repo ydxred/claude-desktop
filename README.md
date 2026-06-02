@@ -111,10 +111,10 @@ locale in `i18n.js`.
   Tux penguin, a `</>` mark). An alternative generator (`assets/icon_gen.py`, by
   the local `gemini` CLI) renders one with
   `python3 assets/icon_gen.py assets/app-icon.png`.
-- A **raw AppImage** shows its icon by matching an installed
-  `claude-code-desktop.desktop`. On a fresh machine with no launcher installed,
-  use the **.deb** (self-contained icon) or integrate the AppImage
-  (e.g. AppImageLauncher).
+- **AppImage self-integration** — on first launch the AppImage installs its own
+  `.desktop` entry and icon into `~/.local/share`, so it gets an app-grid entry
+  and a dock/overview icon on any machine, with no AppImageLauncher needed. (The
+  `.deb` installs its icon system-wide instead.)
 
 ## Uninstall
 

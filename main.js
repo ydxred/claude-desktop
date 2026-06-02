@@ -199,6 +199,50 @@ ipcMain.handle('i18n:set', (_event, locale) => {
   return payload;
 });
 
+// --- AppImage self-integration -----------------------------------------------
+// When launched as a packaged AppImage, install a .desktop entry + icon into
+// ~/.local/share on startup. This gives the window an app icon and an app-grid
+// entry even on a fresh machine where only the bare .AppImage exists (GNOME
+// resolves the icon by matching the window's app_id to this .desktop).
+function integrateAppImage() {
+  const appImage = process.env.APPIMAGE;
+  if (!appImage || !fs.existsSync(appImage)) return; // not a real AppImage run
+  try {
+    const home = os.homedir();
+    const appsDir = path.join(home, '.local', 'share', 'applications');
+    const iconDir = path.join(home, '.local', 'share', 'icons');
+    const iconPath = path.join(iconDir, 'claude-code-desktop.png');
+    const desktopPath = path.join(appsDir, 'claude-code-desktop.desktop');
+    fs.mkdirSync(appsDir, { recursive: true });
+    fs.mkdirSync(iconDir, { recursive: true });
+
+    // Copy the bundled icon out of the asar to a real file (absolute Icon= path
+    // needs no icon-theme cache refresh). Write once.
+    if (!fs.existsSync(iconPath)) {
+      fs.writeFileSync(iconPath, fs.readFileSync(path.join(__dirname, 'assets', 'app-icon.png')));
+    }
+
+    const entry =
+      '[Desktop Entry]\n' +
+      'Type=Application\n' +
+      'Name=Claude Code Desktop\n' +
+      'Comment=Claude Code CLI in a desktop window\n' +
+      `Exec="${appImage}" %U\n` +
+      `Icon=${iconPath}\n` +
+      'Terminal=false\n' +
+      'Categories=Development;\n' +
+      'StartupNotify=true\n' +
+      'StartupWMClass=claude-code-desktop\n';
+
+    // (Re)write only when missing or the AppImage moved — self-healing, no churn.
+    let existing = '';
+    try {
+      existing = fs.readFileSync(desktopPath, 'utf8');
+    } catch (_) {}
+    if (existing !== entry) fs.writeFileSync(desktopPath, entry);
+  } catch (_) {}
+}
+
 // --- Window ------------------------------------------------------------------
 function createWindow() {
   const win = new BrowserWindow({
@@ -326,6 +370,7 @@ function buildAndSetMenu(locale) {
 app.whenReady().then(() => {
   const cfg = readConfig();
   currentLocale = i18n.resolve(cfg.locale || app.getLocale());
+  integrateAppImage();
   buildAndSetMenu(currentLocale);
   createWindow();
   app.on('activate', () => {
