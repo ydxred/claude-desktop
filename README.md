@@ -12,6 +12,15 @@ line: slash commands, MCP, plugins, hooks, skills, permissions — everything.
 > use the CLI"). This is a self-built wrapper to get a real desktop app on Linux.
 > Built and tested on **Ubuntu 24.04 (Wayland + GNOME, x86_64)**.
 
+## Screenshots
+
+![Claude Code Desktop — main window](docs/hero.png)
+
+Fully localized into 12 languages with right-to-left support, plus 5 color
+themes (Arabic + Dracula shown):
+
+![Arabic (RTL) interface](docs/i18n-rtl.png)
+
 ## Features
 
 - **Real terminal** running the actual `claude` CLI — 100% feature parity
