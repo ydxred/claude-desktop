@@ -1,0 +1,151 @@
+:root {
+  --bg: #181825;
+  --bg-soft: #1e1e2e;
+  --bar: #11111b;
+  --fg: #cdd6f4;
+  --muted: #6c7086;
+  --accent: #cba6f7;
+  --tab-active: #313244;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Inter", "Ubuntu", system-ui, sans-serif;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- tab bar ---- */
+#tabbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bar);
+  padding: 6px 8px;
+  -webkit-app-region: drag;
+  user-select: none;
+}
+#tabs { display: flex; gap: 4px; -webkit-app-region: no-drag; }
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 220px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  background: var(--bg-soft);
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tab.active { background: var(--tab-active); color: var(--fg); }
+.tab .label { overflow: hidden; text-overflow: ellipsis; }
+.tab .close {
+  width: 16px; height: 16px;
+  line-height: 16px; text-align: center;
+  border-radius: 4px;
+  color: var(--muted);
+}
+.tab .close:hover { background: #45475a; color: var(--fg); }
+
+#tabbar button {
+  -webkit-app-region: no-drag;
+  background: var(--bg-soft);
+  color: var(--fg);
+  border: none;
+  border-radius: 7px;
+  padding: 5px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+#tabbar button:hover { background: var(--tab-active); }
+#newtab { font-size: 16px; font-weight: 600; line-height: 1; padding: 4px 11px; }
+.spacer { flex: 1; }
+
+.globe { -webkit-app-region: no-drag; font-size: 14px; opacity: 0.8; }
+#lang {
+  -webkit-app-region: no-drag;
+  background: var(--bg-soft);
+  color: var(--fg);
+  border: none;
+  border-radius: 7px;
+  padding: 5px 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+#lang:hover { background: var(--tab-active); }
+
+/* ---- terminals ---- */
+/* keep the terminal itself left-to-right even when the UI is RTL (Arabic) */
+#terminals { position: relative; flex: 1; min-height: 0; direction: ltr; }
+.term-host {
+  position: absolute;
+  inset: 0;
+  padding: 6px 8px;
+  background: var(--bg);
+  display: none;
+}
+.term-host.active { display: block; }
+.term-host .xterm { height: 100%; }
+
+/* ---- find bar ---- */
+#findbar {
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  z-index: 10;
+  display: none;
+  align-items: center;
+  gap: 4px;
+  background: var(--bar);
+  border: 1px solid #313244;
+  border-radius: 8px;
+  padding: 5px 6px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+#findbar.visible { display: flex; }
+#findinput {
+  background: var(--bg-soft);
+  color: var(--fg);
+  border: none;
+  border-radius: 5px;
+  padding: 5px 8px;
+  font-size: 13px;
+  width: 200px;
+  outline: none;
+}
+#findbar button {
+  background: var(--bg-soft);
+  color: var(--fg);
+  border: none;
+  border-radius: 5px;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
+#findbar button:hover { background: var(--tab-active); }
+
+/* ---- status bar ---- */
+#statusbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bar);
+  color: var(--muted);
+  font-size: 11px;
+  padding: 3px 10px;
+}
+#status-claude { color: var(--accent); }

@@ -1,0 +1,138 @@
+<img src="assets/app-icon.png" width="96" align="right" alt="Claude Code Desktop icon">
+
+# Claude Code Desktop (unofficial)
+
+A Linux desktop GUI that runs the **real `claude` CLI** inside a window. Not a
+reimplementation — it embeds a real terminal (xterm.js + node-pty) and spawns
+your installed `claude` binary, so every feature works exactly like the command
+line: slash commands, MCP, plugins, hooks, skills, permissions — everything.
+
+> The [official Claude Code desktop app](https://code.claude.com/docs/en/desktop)
+> ships only for macOS and Windows ("the desktop app is not available on Linux;
+> use the CLI"). This is a self-built wrapper to get a real desktop app on Linux.
+> Built and tested on **Ubuntu 24.04 (Wayland + GNOME, x86_64)**.
+
+## Features
+
+- **Real terminal** running the actual `claude` CLI — 100% feature parity
+- **Tabbed sessions** — several Claude sessions at once, each in its own folder
+- **Folder picker** — start a session in any working directory
+- **Find** in scrollback, **clear terminal**, **restart session**, tab navigation
+- **5 color themes** (Catppuccin Mocha, Dracula, Tokyo Night, Solarized Dark,
+  GitHub Light) — remembered across restarts
+- **12 UI languages** incl. RTL Arabic — auto-detected, remembered
+- Fully localized menu bar (Session / Edit / View / Help), zoom, always-on-top,
+  fullscreen, about dialog, docs link
+- **Terminal-friendly shortcuts**: `Ctrl+C` / `Ctrl+V` / `Ctrl+W` / `Ctrl+A` /
+  `Ctrl+R` stay with the shell; app actions use `Ctrl+Shift+…`
+- Ships as **AppImage** and **.deb**
+
+## Requirements
+
+- Linux with a desktop (tested: Ubuntu 24.04, Wayland + GNOME)
+- [Claude Code CLI](https://code.claude.com/docs) installed (`claude` on `PATH`
+  or under nvm)
+- To build from source: Node.js 18+ and a C/C++ toolchain (for `node-pty`)
+
+## Run from source
+
+```bash
+npm install
+npm start          # or: ./run.sh
+```
+
+Add a desktop launcher (app grid / dock entry, no sudo):
+
+```bash
+./install-launcher.sh
+```
+
+## Build a packaged app
+
+```bash
+npm run dist
+```
+
+Produces in `dist/` (x64 Linux):
+
+| File | Use |
+|------|-----|
+| `Claude Code Desktop-<ver>.AppImage` | Portable. `chmod +x`, then double-click. No install. |
+| `claude-code-desktop_<ver>_amd64.deb` | `sudo apt install ./dist/claude-code-desktop_*_amd64.deb` — adds an app-menu entry + icon. |
+
+`npm run dist` also runs `scripts/fix-appimage.sh`, which patches the AppImage's
+internal `AppRun` to launch with `--no-sandbox` and `--class=claude-code-desktop`
+so a raw double-click both **starts** and **shows the app icon** on Ubuntu 24.04.
+
+## How it works
+
+```
+Electron (main.js) ──spawn──▶ node-pty ──▶ /path/to/claude
+        │                                       │
+        └─ preload.js (secure IPC) ─ renderer (xterm.js terminal)
+```
+
+- `main.js` — Electron main process: window, localized menu, pty management, settings
+- `preload.js` — `contextBridge` IPC surface (the renderer never touches Node directly)
+- `renderer/` — xterm.js terminal UI, tabs, themes, find bar, language picker
+- `i18n.js` — UI string catalog for the 12 locales
+
+The `claude` binary is resolved robustly even when launched from the app grid
+(where `PATH` is minimal): `$CLAUDE_DESKTOP_BIN` → login-shell `command -v claude`
+→ newest `~/.nvm/versions/node/*/bin/claude` → common global paths. Override with:
+
+```bash
+CLAUDE_DESKTOP_BIN=/path/to/claude ./run.sh
+```
+
+## UI language
+
+Pick from the 🌐 toolbar dropdown: English · 简体中文 · 繁體中文 · 日本語 · 한국어
+· Español · Français · Deutsch · Português · Русский · العربية (RTL) · हिन्दी.
+Auto-detected from your system locale on first launch and saved to
+`<userData>/config.json`. Only the **app shell** (menus, buttons, status bar,
+dialogs) is translated — terminal content comes from the real `claude` CLI. Add a
+locale in `i18n.js`.
+
+## Notes
+
+- **`--no-sandbox`** — on Ubuntu 24.04 the bundled `chrome-sandbox` isn't
+  setuid-root and unprivileged user namespaces are restricted by AppArmor, so
+  Chromium's sandbox can't start. As a local app launching a local CLI, it runs
+  with `--no-sandbox`. To keep the sandbox (needs sudo):
+  ```bash
+  sudo chown root node_modules/electron/dist/chrome-sandbox
+  sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
+  CLAUDE_DESKTOP_FLAGS="" ./run.sh
+  ```
+- **node-pty** is a native module compiled against Electron's ABI. After changing
+  the Electron version: `npm run rebuild`.
+- **App icon** — a ChatGPT-generated design (line-art Claude head + sunburst, the
+  Tux penguin, a `</>` mark). An alternative generator (`assets/icon_gen.py`, by
+  the local `gemini` CLI) renders one with
+  `python3 assets/icon_gen.py assets/app-icon.png`.
+- A **raw AppImage** shows its icon by matching an installed
+  `claude-code-desktop.desktop`. On a fresh machine with no launcher installed,
+  use the **.deb** (self-contained icon) or integrate the AppImage
+  (e.g. AppImageLauncher).
+
+## Uninstall
+
+```bash
+# launcher installed from source
+rm -f ~/.local/share/applications/claude-code-desktop.desktop
+# the .deb
+sudo apt remove claude-code-desktop
+```
+
+## Limitations
+
+- A thin wrapper, **not** the official app — the UI is the terminal TUI (which is
+  exactly what guarantees full feature parity); there is no custom chat / editor /
+  diff UI.
+- x64 Linux only; tested on Ubuntu 24.04 / Wayland + GNOME. Other distros likely
+  work but are untested. ARM64 is not built by default.
+
+## License
+
+[MIT](LICENSE)

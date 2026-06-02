@@ -1,0 +1,55 @@
+{
+  "name": "claude-code-desktop",
+  "version": "0.1.0",
+  "description": "Unofficial desktop GUI wrapper that runs the real Claude Code CLI in a window",
+  "main": "main.js",
+  "author": "local",
+  "license": "MIT",
+  "homepage": "https://claude.com/claude-code",
+  "scripts": {
+    "start": "electron .",
+    "rebuild": "electron-rebuild -f -w node-pty",
+    "dist": "electron-builder --linux AppImage deb && bash scripts/fix-appimage.sh"
+  },
+  "build": {
+    "appId": "com.local.claudecodedesktop",
+    "productName": "Claude Code Desktop",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "i18n.js",
+      "renderer/**/*",
+      "assets/app-icon.png",
+      "!**/*.log"
+    ],
+    "asarUnpack": [
+      "**/node_modules/node-pty/**"
+    ],
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "assets/app-icon.png",
+      "category": "Development",
+      "executableName": "claude-code-desktop",
+      "maintainer": "local <local@localhost>",
+      "executableArgs": ["--no-sandbox", "--class=claude-code-desktop"]
+    }
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^3.7.2",
+    "electron": "^41.7.1",
+    "electron-builder": "^26.8.1"
+  },
+  "dependencies": {
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/addon-search": "^0.16.0",
+    "@xterm/addon-web-links": "^0.12.0",
+    "@xterm/xterm": "^6.0.0",
+    "node-pty": "^1.1.0"
+  }
+}

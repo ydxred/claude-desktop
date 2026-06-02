@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';" />
+  <title>Claude Code</title>
+  <link rel="stylesheet" href="../node_modules/@xterm/xterm/css/xterm.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="tabbar">
+    <div id="tabs"></div>
+    <button id="newtab" title="New tab (Ctrl+T)">+</button>
+    <div class="spacer"></div>
+    <button id="pickdir" title="Open a folder and start Claude there">📁 Folder…</button>
+    <span class="globe">🌐</span>
+    <select id="lang" title="Language" aria-label="Language"></select>
+  </div>
+  <div id="terminals">
+    <div id="findbar">
+      <input id="findinput" type="text" spellcheck="false" />
+      <button id="findprev" title="Previous (Shift+Enter)">↑</button>
+      <button id="findnext" title="Next (Enter)">↓</button>
+      <button id="findclose" title="Close (Esc)">×</button>
+    </div>
+  </div>
+  <div id="statusbar">
+    <span id="status-cwd"></span>
+    <span class="spacer"></span>
+    <span id="status-claude"></span>
+  </div>
+
+  <!-- xterm.js (UMD globals) -->
+  <script src="../node_modules/@xterm/xterm/lib/xterm.js"></script>
+  <script src="../node_modules/@xterm/addon-fit/lib/addon-fit.js"></script>
+  <script src="../node_modules/@xterm/addon-web-links/lib/addon-web-links.js"></script>
+  <script src="../node_modules/@xterm/addon-search/lib/addon-search.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>
