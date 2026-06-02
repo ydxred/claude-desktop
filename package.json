@@ -38,6 +38,9 @@
       "executableName": "claude-code-desktop",
       "maintainer": "local <local@localhost>",
       "executableArgs": ["--no-sandbox", "--class=claude-code-desktop"]
+    },
+    "appImage": {
+      "artifactName": "${name}-${version}.${ext}"
     }
   },
   "devDependencies": {
