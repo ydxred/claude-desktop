@@ -93,7 +93,7 @@ function writeConfig(patch) {
 // --- Terminal session registry ----------------------------------------------
 const terminals = new Map(); // id -> pty process
 
-function spawnSession({ id, cwd, cols, rows, sender }) {
+function spawnSession({ id, cwd, cols, rows, resumeId, sender }) {
   const startDir = cwd && fs.existsSync(cwd) ? cwd : os.homedir();
   const env = buildEnv();
 
@@ -101,7 +101,7 @@ function spawnSession({ id, cwd, cols, rows, sender }) {
   let args;
   if (CLAUDE_BIN) {
     file = CLAUDE_BIN;
-    args = [];
+    args = resumeId ? ['--resume', resumeId] : [];
   } else {
     // No claude found: drop into a shell so the window is still usable and the
     // user sees a clear message instead of a silent failure.
@@ -129,10 +129,71 @@ function spawnSession({ id, cwd, cols, rows, sender }) {
   return { ok: true, cwd: startDir, claudeFound: !!CLAUDE_BIN };
 }
 
+// --- Past session discovery (for the visual "Resume" picker) ----------------
+// Claude stores transcripts at ~/.claude/projects/<encoded-cwd>/<uuid>.jsonl,
+// where the cwd is encoded by replacing every non-alphanumeric char with "-".
+function encodeProjectDir(cwd) {
+  return String(cwd).replace(/[^a-zA-Z0-9]/g, '-');
+}
+
+// Best-effort title: first real user message (skipping command/caveat/reminder
+// wrappers). Reads only the head of the file so big transcripts stay cheap.
+function sessionTitle(file) {
+  try {
+    const fd = fs.openSync(file, 'r');
+    const buf = Buffer.alloc(65536);
+    const n = fs.readSync(fd, buf, 0, buf.length, 0);
+    fs.closeSync(fd);
+    for (const line of buf.slice(0, n).toString('utf8').split('\n')) {
+      if (!line) continue;
+      let d;
+      try {
+        d = JSON.parse(line);
+      } catch (_) {
+        continue;
+      }
+      const m = d && d.message;
+      if (!m || m.role !== 'user') continue;
+      let text = '';
+      if (typeof m.content === 'string') text = m.content;
+      else if (Array.isArray(m.content)) {
+        const t = m.content.find((p) => p && p.type === 'text');
+        text = t ? t.text || '' : '';
+      }
+      text = text.trim();
+      if (text && !text.startsWith('<')) return text.replace(/\s+/g, ' ').slice(0, 70);
+    }
+  } catch (_) {}
+  return '';
+}
+
+function listSessions(cwd) {
+  try {
+    const dir = path.join(os.homedir(), '.claude', 'projects', encodeProjectDir(cwd));
+    if (!fs.existsSync(dir)) return [];
+    const out = [];
+    for (const f of fs.readdirSync(dir)) {
+      if (!f.endsWith('.jsonl')) continue;
+      const full = path.join(dir, f);
+      let mtime = 0;
+      try {
+        mtime = fs.statSync(full).mtimeMs;
+      } catch (_) {}
+      out.push({ id: f.replace(/\.jsonl$/, ''), mtime, title: sessionTitle(full) });
+    }
+    out.sort((a, b) => b.mtime - a.mtime);
+    return out.slice(0, 50);
+  } catch (_) {
+    return [];
+  }
+}
+
 // --- IPC ---------------------------------------------------------------------
 ipcMain.handle('pty:create', (event, opts) =>
   spawnSession({ ...opts, sender: event.sender })
 );
+
+ipcMain.handle('sessions:list', (_event, cwd) => listSessions(cwd));
 
 ipcMain.on('pty:input', (_event, { id, data }) => {
   const p = terminals.get(id);
@@ -305,6 +366,7 @@ function buildAndSetMenu(locale) {
       submenu: [
         { label: t.newTab, accelerator: 'CmdOrCtrl+Shift+T', click: (_m, w) => sendAction(w, 'newTab') },
         { label: t.newTabFolder, accelerator: 'CmdOrCtrl+Shift+O', click: (_m, w) => sendAction(w, 'newTabFolder') },
+        { label: t.resume, accelerator: 'CmdOrCtrl+Shift+E', click: (_m, w) => sendAction(w, 'resume') },
         { label: t.restartSession, accelerator: 'CmdOrCtrl+Shift+R', click: (_m, w) => sendAction(w, 'restartSession') },
         { type: 'separator' },
         { label: t.nextTab, accelerator: 'CmdOrCtrl+PageDown', click: (_m, w) => sendAction(w, 'nextTab') },

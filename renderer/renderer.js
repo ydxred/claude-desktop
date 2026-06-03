@@ -64,6 +64,10 @@ const findInput = document.getElementById('findinput');
 const findPrevBtn = document.getElementById('findprev');
 const findNextBtn = document.getElementById('findnext');
 const findCloseBtn = document.getElementById('findclose');
+const resumeBar = document.getElementById('resumebar');
+const resumeTitleEl = document.getElementById('resumetitle');
+const resumeListEl = document.getElementById('resumelist');
+const resumeCloseBtn = document.getElementById('resumeclose');
 
 let T = {}; // current UI strings
 const sessions = new Map(); // id -> { term, fit, search, host, tab, label, cwd, restarting }
@@ -93,7 +97,7 @@ function setActive(id) {
   }
 }
 
-async function createSession(cwd) {
+async function createSession(cwd, resumeId) {
   const id = 'term-' + ++seq;
 
   // tab
@@ -143,9 +147,9 @@ async function createSession(cwd) {
 
   term.onData((data) => api.sendInput(id, data));
 
-  const res = await api.createSession({ id, cwd, cols: term.cols, rows: term.rows });
+  const res = await api.createSession({ id, cwd, cols: term.cols, rows: term.rows, resumeId });
   s.cwd = res.cwd;
-  label.textContent = basename(res.cwd);
+  label.textContent = (resumeId ? '↺ ' : '') + basename(res.cwd);
 
   setActive(id);
   return id;
@@ -231,6 +235,67 @@ findNextBtn.addEventListener('click', findNext);
 findPrevBtn.addEventListener('click', findPrev);
 findCloseBtn.addEventListener('click', hideFind);
 
+// ---- resume picker ----
+function relTime(ms) {
+  const sec = Math.max(0, (Date.now() - ms) / 1000);
+  if (sec < 60) return 'just now';
+  const m = Math.floor(sec / 60);
+  if (m < 60) return m + 'm ago';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + 'h ago';
+  return Math.floor(h / 24) + 'd ago';
+}
+async function showResume() {
+  const s = sessions.get(activeId);
+  const cwd = s ? s.cwd : appInfo.home;
+  resumeTitleEl.textContent = (T.resumeTitle || 'Resume a session') + ' · ' + cwd;
+  resumeListEl.innerHTML = '';
+  resumeBar.classList.add('visible');
+  const list = await api.listSessions(cwd);
+  if (!resumeBar.classList.contains('visible')) return; // closed while loading
+  resumeListEl.innerHTML = '';
+  if (!list || !list.length) {
+    const e = document.createElement('div');
+    e.className = 'resume-empty';
+    e.textContent = T.resumeEmpty || 'No saved sessions for this folder';
+    resumeListEl.appendChild(e);
+    return;
+  }
+  for (const sess of list) {
+    const row = document.createElement('div');
+    row.className = 'resume-item';
+    const title = document.createElement('div');
+    title.className = 'rtitle';
+    title.textContent = sess.title || 'session ' + sess.id.slice(0, 8);
+    const meta = document.createElement('div');
+    meta.className = 'rmeta';
+    meta.textContent = relTime(sess.mtime) + ' · ' + sess.id.slice(0, 8);
+    row.append(title, meta);
+    row.addEventListener('click', () => {
+      hideResume();
+      createSession(cwd, sess.id);
+    });
+    resumeListEl.appendChild(row);
+  }
+}
+function hideResume() {
+  resumeBar.classList.remove('visible');
+  const s = sessions.get(activeId);
+  if (s) s.term.focus();
+}
+resumeCloseBtn.addEventListener('click', hideResume);
+document.addEventListener(
+  'keydown',
+  (e) => {
+    if (e.key === 'Escape' && resumeBar.classList.contains('visible')) {
+      e.preventDefault();
+      e.stopPropagation();
+      hideResume();
+    }
+  },
+  true
+);
+
 // ---- theme ----
 function applyTheme(name) {
   if (!THEMES[name]) name = DEFAULT_THEME;
@@ -298,6 +363,7 @@ api.onMenu((name, arg) => {
   switch (name) {
     case 'newTab': createSession(); break;
     case 'newTabFolder': pickAndOpen(); break;
+    case 'resume': showResume(); break;
     case 'restartSession': if (activeId) restartSession(activeId); break;
     case 'nextTab': cycleTab(1); break;
     case 'prevTab': cycleTab(-1); break;

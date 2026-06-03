@@ -21,11 +21,20 @@ themes (Arabic + Dracula shown):
 
 ![Arabic (RTL) interface](docs/i18n-rtl.png)
 
+Run several sessions in parallel as tabs, and reopen past ones from a visual
+picker (**Session ▸ Resume Session…**, `Ctrl+Shift+E`):
+
+![Multiple tabs](docs/tabs.png)
+
+![Resume a past session](docs/resume.png)
+
 ## Features
 
 - **Real terminal** running the actual `claude` CLI — 100% feature parity
 - **Tabbed sessions** — several Claude sessions at once, each in its own folder
 - **Folder picker** — start a session in any working directory
+- **Resume picker** — visually browse & reopen past Claude sessions for the
+  current folder (titles + timestamps), no need to type `claude --resume`
 - **Find** in scrollback, **clear terminal**, **restart session**, tab navigation
 - **5 color themes** (Catppuccin Mocha, Dracula, Tokyo Night, Solarized Dark,
   GitHub Light) — remembered across restarts

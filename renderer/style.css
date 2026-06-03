@@ -138,6 +138,60 @@ body {
 }
 #findbar button:hover { background: var(--tab-active); }
 
+/* ---- resume session picker ---- */
+#resumebar {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 11;
+  display: none;
+  flex-direction: column;
+  width: min(560px, 88%);
+  max-height: 70%;
+  background: var(--bar);
+  border: 1px solid #313244;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+#resumebar.visible { display: flex; }
+#resumehead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--fg);
+  border-bottom: 1px solid #313244;
+}
+#resumeclose {
+  background: var(--bg-soft);
+  color: var(--fg);
+  border: none;
+  border-radius: 5px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+#resumeclose:hover { background: var(--tab-active); }
+#resumelist { overflow-y: auto; padding: 6px; }
+.resume-item {
+  padding: 8px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  color: var(--fg);
+}
+.resume-item:hover { background: var(--tab-active); }
+.resume-item .rtitle {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.resume-item .rmeta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.resume-empty { padding: 16px; color: var(--muted); font-size: 13px; text-align: center; }
+
 /* ---- status bar ---- */
 #statusbar {
   display: flex;

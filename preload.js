@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('claudeDesktop', {
   resize: (id, cols, rows) => ipcRenderer.send('pty:resize', { id, cols, rows }),
   kill: (id) => ipcRenderer.send('pty:kill', { id }),
   pickFolder: () => ipcRenderer.invoke('dialog:pickFolder'),
+  listSessions: (cwd) => ipcRenderer.invoke('sessions:list', cwd),
   appInfo: () => ipcRenderer.invoke('app:info'),
 
   i18n: {

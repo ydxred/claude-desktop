@@ -211,6 +211,23 @@ const STRINGS = {
   },
 };
 
+// Resume-picker strings, merged into the catalog above.
+const RESUME = {
+  en: { resume: 'Resume Session…', resumeTitle: 'Resume a session', resumeEmpty: 'No saved sessions for this folder' },
+  'zh-CN': { resume: '恢复会话…', resumeTitle: '恢复一个会话', resumeEmpty: '此文件夹没有已保存的会话' },
+  'zh-TW': { resume: '恢復工作階段…', resumeTitle: '恢復一個工作階段', resumeEmpty: '此資料夾沒有已儲存的工作階段' },
+  ja: { resume: 'セッションを再開…', resumeTitle: 'セッションを再開', resumeEmpty: 'このフォルダに保存されたセッションはありません' },
+  ko: { resume: '세션 다시 열기…', resumeTitle: '세션 다시 열기', resumeEmpty: '이 폴더에 저장된 세션이 없습니다' },
+  es: { resume: 'Reanudar sesión…', resumeTitle: 'Reanudar una sesión', resumeEmpty: 'No hay sesiones guardadas para esta carpeta' },
+  fr: { resume: 'Reprendre une session…', resumeTitle: 'Reprendre une session', resumeEmpty: 'Aucune session enregistrée pour ce dossier' },
+  de: { resume: 'Sitzung fortsetzen…', resumeTitle: 'Sitzung fortsetzen', resumeEmpty: 'Keine gespeicherten Sitzungen für diesen Ordner' },
+  pt: { resume: 'Retomar sessão…', resumeTitle: 'Retomar uma sessão', resumeEmpty: 'Nenhuma sessão salva para esta pasta' },
+  ru: { resume: 'Возобновить сеанс…', resumeTitle: 'Возобновить сеанс', resumeEmpty: 'Нет сохранённых сеансов для этой папки' },
+  ar: { resume: 'استئناف جلسة…', resumeTitle: 'استئناف جلسة', resumeEmpty: 'لا توجد جلسات محفوظة لهذا المجلد' },
+  hi: { resume: 'सत्र फिर से शुरू करें…', resumeTitle: 'एक सत्र फिर से शुरू करें', resumeEmpty: 'इस फ़ोल्डर के लिए कोई सहेजा गया सत्र नहीं' },
+};
+for (const k of Object.keys(STRINGS)) Object.assign(STRINGS[k], RESUME[k]);
+
 // Endonyms (each language shown in its own name) and display order.
 const NAMES = {
   en: 'English', 'zh-CN': '简体中文', 'zh-TW': '繁體中文', ja: '日本語', ko: '한국어',
