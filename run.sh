@@ -11,6 +11,9 @@ cd "$DIR"
 # CLI, so dropping the renderer sandbox is acceptable. To keep the sandbox
 # instead, see README ("Keeping the Chromium sandbox") and run with
 #   CLAUDE_DESKTOP_FLAGS="" ./run.sh
-# --class sets the Wayland app_id / X11 WM_CLASS so GNOME can match the window
-# to claude-code-desktop.desktop and show the app icon in the dock/overview.
-exec "$DIR/node_modules/.bin/electron" . --class=claude-code-desktop ${CLAUDE_DESKTOP_FLAGS:---no-sandbox} "$@"
+# Use the real Electron binary (self-contained, bundles its own node) rather
+# than node_modules/.bin/electron (a `#!/usr/bin/env node` shim) so launching
+# from a GUI/.desktop never depends on a `node` being on PATH.
+# --class sets the Wayland app_id / X11 WM_CLASS so GNOME matches the window to
+# claude-code-desktop.desktop and shows the app icon in the dock/overview.
+exec "$DIR/node_modules/electron/dist/electron" . --class=claude-code-desktop ${CLAUDE_DESKTOP_FLAGS:---no-sandbox} "$@"
