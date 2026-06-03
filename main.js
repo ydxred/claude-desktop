@@ -288,7 +288,9 @@ function integrateAppImage() {
       'Type=Application\n' +
       'Name=Claude Code Desktop\n' +
       'Comment=Claude Code CLI in a desktop window\n' +
-      `Exec="${appImage}" %U\n` +
+      // APPIMAGE_EXTRACT_AND_RUN avoids the libfuse2 dependency (not present on
+      // Ubuntu 24.04), so the launcher works without FUSE installed.
+      `Exec=env APPIMAGE_EXTRACT_AND_RUN=1 "${appImage}" %U\n` +
       `Icon=${iconPath}\n` +
       'Terminal=false\n' +
       'Categories=Development;\n' +

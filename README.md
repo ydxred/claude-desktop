@@ -75,12 +75,20 @@ Produces in `dist/` (x64 Linux):
 
 | File | Use |
 |------|-----|
-| `Claude Code Desktop-<ver>.AppImage` | Portable. `chmod +x`, then double-click. No install. |
-| `claude-code-desktop_<ver>_amd64.deb` | `sudo apt install ./dist/claude-code-desktop_*_amd64.deb` — adds an app-menu entry + icon. |
+| `claude-code-desktop-<ver>.AppImage` | Portable, no install. Needs **FUSE** (see below). |
+| `claude-code-desktop_<ver>_amd64.deb` | `sudo apt install ./dist/claude-code-desktop_*_amd64.deb` — adds an app-menu entry + icon. **No FUSE needed.** |
 
 `npm run dist` also runs `scripts/fix-appimage.sh`, which patches the AppImage's
 internal `AppRun` to launch with `--no-sandbox` and `--class=claude-code-desktop`
-so a raw double-click both **starts** and **shows the app icon** on Ubuntu 24.04.
+so it **starts** and **shows the app icon** on Ubuntu 24.04.
+
+> **AppImage & FUSE.** A type-2 AppImage self-mounts via libfuse2, which Ubuntu
+> 24.04 does **not** ship (it has libfuse3). Without it a double-click fails with
+> *"AppImages require FUSE to run."* Fixes, pick one:
+> - `sudo apt install libfuse2t64` (then double-click works), **or**
+> - run it FUSE-free: `APPIMAGE_EXTRACT_AND_RUN=1 ./claude-code-desktop-<ver>.AppImage`
+>   (the self-installed launcher does this for you after the first run), **or**
+> - just use the **`.deb`** (or run from source) — neither needs FUSE.
 
 ## How it works
 

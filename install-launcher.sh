@@ -11,7 +11,7 @@ mkdir -p "$APPS"
 cat > "$DESKTOP" <<EOF
 [Desktop Entry]
 Type=Application
-Name=Claude Code
+Name=Claude Code Desktop
 Comment=Claude Code CLI in a desktop window
 Exec=$DIR/run.sh
 Icon=$DIR/assets/app-icon.png
