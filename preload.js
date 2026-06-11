@@ -27,6 +27,9 @@ contextBridge.exposeInMainWorld('claudeDesktop', {
   clipboard: {
     write: (text) => clipboard.writeText(text),
     read: () => clipboard.readText(),
+    // X11 PRIMARY selection (select-to-copy / middle-click-paste on Linux)
+    writePrimary: (text) => { try { clipboard.writeText(text, 'selection'); } catch (_) {} },
+    readPrimary: () => { try { return clipboard.readText('selection'); } catch (_) { return ''; } },
   },
 
   onData: (cb) => ipcRenderer.on('pty:data', (_e, payload) => cb(payload)),

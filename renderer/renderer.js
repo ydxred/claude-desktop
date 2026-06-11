@@ -68,6 +68,7 @@ const resumeBar = document.getElementById('resumebar');
 const resumeTitleEl = document.getElementById('resumetitle');
 const resumeListEl = document.getElementById('resumelist');
 const resumeCloseBtn = document.getElementById('resumeclose');
+const ctxMenu = document.getElementById('ctxmenu');
 
 let T = {}; // current UI strings
 const sessions = new Map(); // id -> { term, fit, search, host, tab, label, cwd, restarting }
@@ -146,6 +147,37 @@ async function createSession(cwd, resumeId) {
   sessions.set(id, s);
 
   term.onData((data) => api.sendInput(id, data));
+
+  // ---- mouse copy/paste (Linux conventions) ----
+  // select-to-copy → PRIMARY selection (doesn't clobber the clipboard)
+  host.addEventListener('mouseup', () => {
+    if (term.hasSelection()) {
+      const sel = term.getSelection();
+      if (sel) api.clipboard.writePrimary(sel);
+    }
+  });
+  // middle-click → paste PRIMARY (fallback to clipboard)
+  host.addEventListener(
+    'mousedown',
+    (e) => {
+      if (e.button === 1) {
+        e.preventDefault();
+        const t = api.clipboard.readPrimary() || api.clipboard.read();
+        if (t) term.paste(t);
+      }
+    },
+    true
+  );
+  // right-click → context menu (Copy / Paste / Select All)
+  host.addEventListener(
+    'contextmenu',
+    (e) => {
+      e.preventDefault();
+      setActive(id);
+      showCtx(e.clientX, e.clientY);
+    },
+    true
+  );
 
   const res = await api.createSession({ id, cwd, cols: term.cols, rows: term.rows, resumeId });
   s.cwd = res.cwd;
@@ -296,6 +328,27 @@ document.addEventListener(
   true
 );
 
+// ---- right-click context menu (mouse copy/paste) ----
+function showCtx(x, y) {
+  ctxMenu.style.left = Math.min(x, window.innerWidth - 160) + 'px';
+  ctxMenu.style.top = Math.min(y, window.innerHeight - 120) + 'px';
+  ctxMenu.classList.add('visible');
+}
+function hideCtx() {
+  ctxMenu.classList.remove('visible');
+}
+ctxMenu.addEventListener('mousedown', (e) => e.preventDefault()); // keep terminal selection/focus
+ctxMenu.querySelectorAll('.ctx-item').forEach((el) => {
+  el.addEventListener('click', () => {
+    const act = el.dataset.act;
+    if (act === 'copy') doCopy();
+    else if (act === 'paste') doPaste();
+    else if (act === 'selectAll') doSelectAll();
+    hideCtx();
+  });
+});
+window.addEventListener('click', hideCtx);
+
 // ---- theme ----
 function applyTheme(name) {
   if (!THEMES[name]) name = DEFAULT_THEME;
@@ -403,6 +456,9 @@ function applyI18n({ locale, dir, strings }) {
   pickdirBtn.title = T.folderTooltip;
   langSel.title = T.language;
   findInput.placeholder = T.findPlaceholder || 'Find…';
+  if (T.copy) ctxMenu.querySelector('[data-act="copy"]').textContent = T.copy;
+  if (T.paste) ctxMenu.querySelector('[data-act="paste"]').textContent = T.paste;
+  if (T.selectAll) ctxMenu.querySelector('[data-act="selectAll"]').textContent = T.selectAll;
   renderClaudeStatus();
 }
 langSel.addEventListener('change', () => api.i18n.set(langSel.value));

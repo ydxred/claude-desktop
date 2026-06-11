@@ -192,6 +192,29 @@ body {
 .resume-item .rmeta { font-size: 11px; color: var(--muted); margin-top: 2px; }
 .resume-empty { padding: 16px; color: var(--muted); font-size: 13px; text-align: center; }
 
+/* ---- right-click context menu ---- */
+#ctxmenu {
+  position: absolute;
+  z-index: 20;
+  display: none;
+  min-width: 140px;
+  background: var(--bar);
+  border: 1px solid #313244;
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+#ctxmenu.visible { display: block; }
+.ctx-item {
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--fg);
+  cursor: pointer;
+  user-select: none;
+}
+.ctx-item:hover { background: var(--tab-active); }
+
 /* ---- status bar ---- */
 #statusbar {
   display: flex;

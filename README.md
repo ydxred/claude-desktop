@@ -43,6 +43,9 @@ picker (**Session ▸ Resume Session…**, `Ctrl+Shift+E`):
   fullscreen, about dialog, docs link
 - **Terminal-friendly shortcuts**: `Ctrl+C` / `Ctrl+V` / `Ctrl+W` / `Ctrl+A` /
   `Ctrl+R` stay with the shell; app actions use `Ctrl+Shift+…`
+- **Mouse copy/paste**: select text to copy it (PRIMARY selection), middle-click
+  to paste, or right-click for a Copy / Paste / Select All menu — plus
+  `Ctrl+Shift+C` / `Ctrl+Shift+V`
 - Ships as **AppImage** and **.deb**
 
 ## Requirements
