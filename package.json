@@ -1,6 +1,6 @@
 {
   "name": "claude-code-desktop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Unofficial desktop GUI wrapper that runs the real Claude Code CLI in a window",
   "main": "main.js",
   "author": "local",

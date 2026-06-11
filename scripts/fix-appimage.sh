@@ -12,7 +12,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-APPIMAGE="$(ls "$ROOT"/dist/*.AppImage 2>/dev/null | head -1 || true)"
+# newest AppImage (by mtime) — avoids patching a stale older-version artifact
+APPIMAGE="$(ls -t "$ROOT"/dist/*.AppImage 2>/dev/null | head -1 || true)"
 [ -z "$APPIMAGE" ] && { echo "fix-appimage: no .AppImage in dist/"; exit 1; }
 
 CACHE="$HOME/.cache/electron-builder/appimage"
@@ -25,11 +26,14 @@ trap 'rm -rf "$WORK"' EXIT
 cd "$WORK"
 "$APPIMAGE" --appimage-extract >/dev/null
 
-# Pass both --no-sandbox (sandbox can't start on Ubuntu 24.04) and
-# --class=claude-code-desktop (sets the Wayland app_id so GNOME resolves the
-# app icon via claude-code-desktop.desktop) on a raw AppImage launch too.
-if ! grep -q -- '--class=claude-code-desktop' squashfs-root/AppRun; then
-  sed -i 's#exec "$BIN"#exec "$BIN" --no-sandbox --class=claude-code-desktop#g' squashfs-root/AppRun
+# Bake the runtime flags into AppRun so EVERY AppImage launch (raw double-click,
+# self-installed .desktop, etc.) gets them:
+#   --no-sandbox            sandbox can't start on Ubuntu 24.04
+#   --class=claude-code-desktop   Wayland/X11 app_id -> GNOME resolves the icon
+#   --ozone-platform=x11    XWayland; native-Wayland Ozone clipboard doesn't sync
+#                           with the system clipboard (breaks copy/paste)
+if ! grep -q -- '--ozone-platform=x11' squashfs-root/AppRun; then
+  sed -i 's#exec "$BIN"#exec "$BIN" --no-sandbox --class=claude-code-desktop --ozone-platform=x11#g' squashfs-root/AppRun
 fi
 
 "$MK" squashfs-root app.sqfs -root-owned -noappend -comp gzip -no-progress >/dev/null
