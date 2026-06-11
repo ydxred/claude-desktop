@@ -1,6 +1,6 @@
 'use strict';
 
-const { app, BrowserWindow, ipcMain, dialog, Menu, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, shell, clipboard } = require('electron');
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
@@ -9,8 +9,11 @@ const pty = require('node-pty');
 const i18n = require('./i18n');
 
 // --- Wayland / Linux display adaptation --------------------------------------
-// Let Electron pick Wayland natively when available, fall back to X11.
-app.commandLine.appendSwitch('ozone-platform-hint', 'auto');
+// Run under X11/XWayland, NOT native Wayland: Chromium's Ozone clipboard does
+// not sync with the system clipboard on native Wayland here, which breaks
+// copy/paste between the app and other programs. X11 (XWayland) clipboard works
+// and GNOME bridges it to Wayland apps.
+app.commandLine.appendSwitch('ozone-platform', 'x11');
 
 // In a packaged build there is no run.sh to add --no-sandbox, and the bundled
 // chrome-sandbox isn't setuid-root on Ubuntu 24.04, so the sandbox can't start.
@@ -246,6 +249,23 @@ ipcMain.handle('i18n:get', () => ({
 
 ipcMain.handle('settings:get', () => readConfig());
 ipcMain.on('settings:set', (_event, patch) => writeConfig(patch));
+
+// Clipboard runs in the main process: the renderer is sandboxed, so its preload
+// can't use Electron's clipboard module directly. Reads are synchronous so the
+// renderer can paste inline.
+ipcMain.on('clipboard:write', (_event, payload) => {
+  const text = payload && payload.text != null ? String(payload.text) : '';
+  try {
+    clipboard.writeText(text, payload && payload.primary ? 'selection' : 'clipboard');
+  } catch (_) {}
+});
+ipcMain.on('clipboard:read', (event, payload) => {
+  try {
+    event.returnValue = clipboard.readText(payload && payload.primary ? 'selection' : 'clipboard');
+  } catch (_) {
+    event.returnValue = '';
+  }
+});
 
 ipcMain.handle('i18n:set', (_event, locale) => {
   currentLocale = i18n.resolve(locale);

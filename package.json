@@ -37,7 +37,7 @@
       "category": "Development",
       "executableName": "claude-code-desktop",
       "maintainer": "local <local@localhost>",
-      "executableArgs": ["--no-sandbox", "--class=claude-code-desktop"]
+      "executableArgs": ["--no-sandbox", "--class=claude-code-desktop", "--ozone-platform=x11"]
     },
     "appImage": {
       "artifactName": "${name}-${version}.${ext}"

@@ -1,6 +1,6 @@
 'use strict';
 
-const { contextBridge, ipcRenderer, clipboard } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron');
 
 // Secure bridge: renderer never touches Node directly. All terminal/pty work
 // happens in the main process; this exposes a tiny typed surface.
@@ -25,11 +25,12 @@ contextBridge.exposeInMainWorld('claudeDesktop', {
   },
 
   clipboard: {
-    write: (text) => clipboard.writeText(text),
-    read: () => clipboard.readText(),
-    // X11 PRIMARY selection (select-to-copy / middle-click-paste on Linux)
-    writePrimary: (text) => { try { clipboard.writeText(text, 'selection'); } catch (_) {} },
-    readPrimary: () => { try { return clipboard.readText('selection'); } catch (_) { return ''; } },
+    // Runs in the main process (sandboxed renderer can't use the clipboard module)
+    write: (text) => ipcRenderer.send('clipboard:write', { text }),
+    read: () => ipcRenderer.sendSync('clipboard:read', {}),
+    // X11/Wayland PRIMARY selection (select-to-copy / middle-click-paste)
+    writePrimary: (text) => ipcRenderer.send('clipboard:write', { text, primary: true }),
+    readPrimary: () => ipcRenderer.sendSync('clipboard:read', { primary: true }),
   },
 
   onData: (cb) => ipcRenderer.on('pty:data', (_e, payload) => cb(payload)),

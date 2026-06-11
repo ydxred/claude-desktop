@@ -134,6 +134,11 @@ locale in `i18n.js`.
   sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
   CLAUDE_DESKTOP_FLAGS="" ./run.sh
   ```
+- **Runs under X11/XWayland** (`--ozone-platform=x11`) — on native Wayland,
+  Chromium's clipboard doesn't sync with the system clipboard, which breaks
+  copy/paste with other apps. XWayland's clipboard works and GNOME bridges it.
+  Clipboard itself runs in the main process (the sandboxed renderer can't use
+  Electron's `clipboard` module).
 - **node-pty** is a native module compiled against Electron's ABI. After changing
   the Electron version: `npm run rebuild`.
 - **App icon** — a ChatGPT-generated design (line-art Claude head + sunburst, the

@@ -16,4 +16,4 @@ cd "$DIR"
 # from a GUI/.desktop never depends on a `node` being on PATH.
 # --class sets the Wayland app_id / X11 WM_CLASS so GNOME matches the window to
 # claude-code-desktop.desktop and shows the app icon in the dock/overview.
-exec "$DIR/node_modules/electron/dist/electron" . --class=claude-code-desktop ${CLAUDE_DESKTOP_FLAGS:---no-sandbox} "$@"
+exec "$DIR/node_modules/electron/dist/electron" . --ozone-platform=x11 --class=claude-code-desktop ${CLAUDE_DESKTOP_FLAGS:---no-sandbox} "$@"
